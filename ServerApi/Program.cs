@@ -4,6 +4,19 @@ using ServerApi.Data;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<ApiDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+ builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+   options.AddPolicy("AllowAngularApp", policyBuilder =>
+   {
+       policyBuilder.WithOrigins("http://localhost:4200")
+           .AllowAnyHeader()
+           .AllowAnyMethod();
+   });
+}); 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
@@ -13,11 +26,14 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.MapOpenApi();
 }
 
 app.UseHttpsRedirection();
-
+app.UseCors("AllowAngularApp");
+app.MapControllers();
 var summaries = new[]
 {
     "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
